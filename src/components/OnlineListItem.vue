@@ -13,6 +13,11 @@
 </template>
 
 <script>
+/**
+ * Author: Sunwish
+ * 
+ * 单纯负责渲染在线列表表项，选中效果（friend-list-item-display）是无聊写的，没实际意义
+ */
 export default {
     props: {
         index: {

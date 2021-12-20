@@ -10,6 +10,11 @@
 </template>
 
 <script>
+/**
+ * Author: Sunwish
+ * 
+ * 单纯负责渲染在线列表，附带实现一个登出功能，实现就是简单的清空 sessionStorage 并刷新页面。
+ */
 import OnlineListItem from "./OnlineListItem.vue"
 let randomId = 1;
 export default {

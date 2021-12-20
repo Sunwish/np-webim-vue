@@ -10,6 +10,19 @@
 </template>
 
 <script>
+/**
+ * Author: Sunwish
+ * 
+ * - 使用 axios 和服务端进行 api 交互，api 设计遵循 RESTful 规范
+ * - 登录状态和个人信息记录在 vuex 中，并通过页面加载和登录成功、关闭时取存
+ *   sessionStorage 来实现刷新页面后登录状态记忆的效果。
+ * 
+ * 设计/实现思路：
+ * 1. 页面加载时首先读取 sessionStorage 中的登录状态，若未登录就提示输入登录身份
+ *    进行登录，登录成功后存储登录状态和用户信息，避免刷新页面后又要重新登录。
+ * 2. 登录后向服务器拉取在线列表(Not Implement yet)和历史消息记录，并通过 Vue 
+ *    传递给相关组件进行视图更新。
+ */
 import axios from 'axios';
 import OnlineList from "./components/OnlineList.vue"
 import Message from "./components/Message.vue"
@@ -29,23 +42,25 @@ export default {
         clickFriendItem: function () {
             // this.displayFriendIndex = this.displayFriendIndex == index ? -1 : index;
         },
-        login: async function (promptMsg = "What's your id?") {
-            let selfId = +prompt(promptMsg);
-            let res = await axios.get(requireBaseURL + '/api/user/' + selfId);
+        login: async function (promptMsg = "What's your username?") {
+            let username = prompt(promptMsg);
+            let res = await axios.post(requireBaseURL + '/api/login', {
+                username: username
+            });
             this.self = res.data.result;
             if(this.self == null) return 1;
             // vuex 记录登录状态和个人信息
             this.$store.state.loginUserInfo = this.self;
             this.$store.state.isLogin = true;
             this.saveStore();
-            // 左下角那个随机加人的按钮改成退出功能
             return 0;
         },
         saveStore: function () {
             sessionStorage.setItem('store', JSON.stringify(this.$store.state));
         }
     },
-    async beforeCreate() {
+
+    beforeCreate() {
         window.addEventListener("beforeunload", () => {
             this.saveStore();
         })
