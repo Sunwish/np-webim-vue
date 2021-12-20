@@ -38,6 +38,7 @@ export default {
         }
     },
     async beforeCreate() {
+        console.log("$store.state.isLogin: " + this.$store.state.isLogin);
     },
 
     async created() {
