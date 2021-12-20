@@ -1,12 +1,12 @@
 <template>
     <div style="height: 100%; display: flex; flex-direction: column;">
         <div class="nickNameDiv">
-            <h1> {{ friend.nickName }} </h1>
+            <h1> Chatroom </h1>
         </div>
         <div class="message-history-viewer" id="message-history-viewer"> <!--color: lightsteelblue;-->
-            <div :class="{ messageFromSelf : msg.sender == 1, message : true}" v-for="msg in friend.messageHistory" :key="msg.id">
+            <div :class="{ messageFromSelf : msg.sender._id == self._id, message : true}" v-for="msg in messages" :key="msg._id">
                 <!--lightpink-->
-                <p style="text-decoration: underline; font-weight: 666; margin-bottom: 0.5rem;" v-if="msg.sender == 0">{{ friend.nickName }}: 
+                <p style="text-decoration: underline; font-weight: 666; margin-bottom: 0.5rem;" v-if="msg.sender._id != self._id">{{ msg.sender.username }}: 
                 </p>
                 <!--yellow-->
                 <p style="text-decoration: underline; font-weight: 666; margin-bottom: 0.5rem;" v-else>Me: </p>
@@ -24,23 +24,24 @@
     </div>
 </template>
 <script>
+import axios from 'axios';
+const requireBaseURL = "http://localhost:80";
 let scrollContainer = document.getElementById('message-history-viewer');
 let justCreated = 1;
 export default {
     props: {
-        friend: {
-            type: Object,
+        messages: {
+            type: Array,
             required: true
         },
-        displayFriendId: {
-            type: Number,
+        self: {
+            type: Object,
             required: true
         }
     },
     data () {
         return {
             sendboxContent: "",
-            avater: this.friend.avater
         }
     },
     mounted () {
@@ -52,19 +53,30 @@ export default {
         }
     },
     updated () {
+        console.log("Message.vue updated");
         scrollContainer = document.getElementById('message-history-viewer');
     },
     methods: {
-        clickSend () {
-            this.friend.messageHistory.push({
-                id: this.friend.messageHistory[this.friend.messageHistory.length],
-                sender: 1,
-                content: this.sendboxContent
+        async clickSend () {
+            // request back-end
+            let res = await axios.post(requireBaseURL + '/api/chatroomMessage', {
+                sender: this.self._id,
+                content: this.sendboxContent,
+                time: Date.now()
             });
-            this.sendboxContent = "";
-            setTimeout(()=>{
-                scrollContainer.scrollTop = scrollContainer.scrollHeight;
-            })
+            if(res.data.errMessage == null) {
+                let msgInserted = res.data.result;
+                // update front-end
+                this.messages.push(msgInserted);
+                this.sendboxContent = "";
+                setTimeout(()=>{
+                    scrollContainer.scrollTop = scrollContainer.scrollHeight;
+                })
+            } else {
+                alert("消息发送失败！错误信息见控制台。");
+                console.error("发送消息失败：", res.data.errMessage);
+            }
+
         },
         handleKeyDown () {
             this.clickSend();

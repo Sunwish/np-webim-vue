@@ -1,15 +1,14 @@
 <template>
-    <div class="friend-list-item" :class="{ 'friend-list-item-display' : (index == displayFriendId) }">
+    <div class="friend-list-item" :class="{ 'friend-list-item-display' : (index == displayFriendIndex) }">
         <div class="friend-list-item-avater"><img :src="avater"/></div>
         <div class="friend-list-item-right">
             <div class="friend-list-item-nick">
-                {{ friend.nickName }}
+                {{ user.username }}
             </div>
-            <div v-if="friend.message && friend.messageHistory.length > 0" class="friend-list-item-lastmsg">
-                {{ friend.messageHistory[friend.messageHistory.length-1].content }}
+            <div class="friend-list-item-lastmsg">
+                Online
             </div>
         </div>
-        <!--<img src="../imgs/avater1.jpg"/>-->
     </div>
 </template>
 
@@ -20,22 +19,18 @@ export default {
             type: Number,
             require: true
         },
-        friend: {
+        user: {
             type: Object,
             required: true
         },
-        displayFriendId: {
+        displayFriendIndex: {
             type: Number,
             required: true
         }
     },
     data () {
-        //console.log(this.displayFriendId + ", " + this.friend.id);
-        //this.avater = this.friend.avater;
-        console.log("this.avater: " + this.friend.avater);
         return {
-            avater: this.friend.avater
-            //avater: "../imgs/avater1.jpg"
+            avater: 'http://localhost/api/avater/' + this.user.avater
         }
     }
 }

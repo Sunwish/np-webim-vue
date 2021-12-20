@@ -1,8 +1,8 @@
 <template>
 <div>
-    <h1 style="text-align: center; margin: 1rem 0">Friends</h1>
+    <h1 style="text-align: center; margin: 1rem 0">Online</h1>
     <div>
-        <FriendListItem v-for="(friend, index) in friends" :key="index" :index="index" :friend="friend" :displayFriendId="displayFriendId" @click.native="$emit('clickFriendItem', index)"/>
+        <OnlineListItem v-for="(user, index) in users" :key="index" :index="index" :user="user" :displayFriendIndex="displayFriendIndex" @click.native="$emit('clickFriendItem', index)"/>
     </div>
     <!--lightgoldenrodyellow-->
     <button @click="addFriend" style="position: absolute; bottom: 0rem; width: 100%; height: 5rem; cursor: pointer; background-color: rgb(229, 243, 255); color: rgb(68, 144, 249); font-weight: 666; border: none;">New friend randomly</button>
@@ -10,18 +10,18 @@
 </template>
 
 <script>
-import FriendListItem from "./FriendListItem.vue"
+import OnlineListItem from "./OnlineListItem.vue"
 let randomId = 1;
 export default {
     components: {
-        FriendListItem
+        OnlineListItem
     },
     props: {
-        friends: {
+        users: {
             type: Array,
             required: true
         },
-        displayFriendId: {
+        displayFriendIndex: {
             type: Number,
             required: true
         }
@@ -31,10 +31,10 @@ export default {
     },
     methods: {
         addFriend () {
-            this.friends.push({
-                id: this.friends.length,
-                nickName: 'randomFriend' + randomId++,
-                messageHistory: []
+            this.users.push({
+                id: this.users.length,
+                username: 'randomFriend' + randomId++,
+                avater: 'avater1.jpg'
             });
         }
     }

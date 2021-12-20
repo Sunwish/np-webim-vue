@@ -1,254 +1,60 @@
 <template>
-    <div v-if="friends.length > 0" class="app">
+    <div class="app">
         <div class="FriendListDiv">
-            <FriendList :friends="friends" :displayFriendId="displayFriendId" @clickFriendItem="clickFriendItem"/>
+            <OnlineList :users="onlineUsers" :displayFriendIndex="displayFriendIndex" @clickFriendItem="clickFriendItem"/>
         </div>
         <div class="MessageDiv">
-            <Message :friend="friends[displayFriendId]" :displayFriendId="displayFriendId"/>
+            <Message :messages="messages" :self="self"/>
         </div>
     </div>
 </template>
 
 <script>
 import axios from 'axios';
-import FriendList from "./components/FriendList.vue"
+import OnlineList from "./components/OnlineList.vue"
 import Message from "./components/Message.vue"
-let friendId = 0;
-// let messageId = 0;
 const requireBaseURL = "http://localhost:80";
-//const imgBaseURL = "./imgs";
-const selfId = 0;
 
-function getFriendsId(selfId) {
-    return new Promise((resolve, reject) => {
-        axios.get(requireBaseURL + "/api/friendsId/" + selfId)
-        .then(res => {
-            if(res.data.errMessage) return reject(res.data.errMessage);
-            return resolve(res.data.result);
-        }).catch(err => reject(err))
-    })
-}
-function getFriends(selfId) {
-    return new Promise((resolve, reject) => {
-        getFriendsId(selfId)
-        .then(res => {
-            console.log("friend count: " + res.length);
-            let friends = [];
-            let posts = [];
-
-            for(friendId of res) {
-                console.log(friendId);
-                posts.push(axios.get(requireBaseURL + "/api/user/" + friendId));
-            }
-            
-            Promise.all(posts)
-            .then(async reses => {
-                for(res of reses){
-                    let result = res.data.result;
-                    // var avater = await axios.get(requireBaseURL + "/api/avater/" + result.avater);
-                    friends.push({
-                        id: result.id,
-                        nickName: result.username,
-                        avater: requireBaseURL + "/api/avater/" + result.avater
-                    });
-                    //console.log("Friend's avater: " + imgBaseURL + "/" + result.avater);
-                }
-                resolve(friends);
-            }).catch(err => {
-                console.error(err);
-                reject(err);
-            })
-        })
-        .catch(err => {
-            console.error(err);
-            reject(err);
-        })
-    })
-}
 export default {
     components: {
-        FriendList, Message
+        OnlineList, 
+        Message
     },
     methods: {
-        clickFriendItem (friendId) {
-            console.log(friendId);
-            this.displayFriendId = friendId;
+        clickFriendItem: function () {
+            // this.displayFriendIndex = this.displayFriendIndex == index ? -1 : index;
         },
+        login: async function (promptMsg = "What's your id?") {
+            let selfId = +prompt(promptMsg);
+            let res = await axios.get(requireBaseURL + '/api/user/' + selfId);
+            this.self = res.data.result;
+            if(this.self == null) return 1;
+            this.displayFriendIndex = this.onlineUsers.push(this.self) - 1;
+            // Session 记录登录状态和个人信息
+            sessionStorage.setItem('_id', this.self._id);
+            sessionStorage.setItem('isLogin', true);
+            // 左下角那个随机加人的按钮改成退出功能
+            return 0;
+        }
     },
-    beforeCreate() {
-        // Load all friends
-        getFriends(selfId)
-        .then(res => {
-            console.log("console.log(res);");
-            for(let friend of res){
-                axios.get(requireBaseURL + '/api/messages')
-                .then((res) => {
-                    friend.messageHistory = res.data.result;
-                    this.friends.push(friend);
-                    console.log(friend);
-                })
-                .catch(err => {
-                    console.error(err);
-                });        
-            }
-            // this.friends.push.apply(this.friends, res);
-            console.log(this.friends);
-        })
-        .catch(err => {
-            console.error(err);
-        })
+    async beforeCreate() {
     },
+
+    async created() {
+        // Login with selfId
+        let loginSuccess = await this.login();
+        while(loginSuccess != 0) loginSuccess = await this.login('Id not found. Please enter a valid id:');
+        // Pull message history
+        let messageResult = await axios.get(requireBaseURL + '/api/chatroomMessages');
+        this.messages = messageResult.data.result;
+    },
+
     data() {
         return {
-            displayFriendId: 0,
-            friends: []
-            /*
-            friends: [
-                {
-                    id: friendId++,
-                    nickName: "Steve Jobs",
-                    avater: require("./imgs/avater1.jpg"),
-                    messageHistory: [
-                        {
-                            id: messageId++,
-                            sender: 0,
-                            content: "Just a test!", 
-                        },
-                        {
-                            id: messageId++,
-                            sender: 0,
-                            content: "Hello?"
-                        },
-                        {
-                            id: messageId++,
-                            sender: 1,
-                            content: "What's up?"
-                        },
-                        {
-                            id: messageId++,
-                            sender: 0,
-                            content: "Just a test!", 
-                        },
-                        {
-                            id: messageId++,
-                            sender: 0,
-                            content: "Hello?"
-                        },
-                        {
-                            id: messageId++,
-                            sender: 1,
-                            content: "What's up?"
-                        },
-                        {
-                            id: messageId++,
-                            sender: 0,
-                            content: "Just a test!", 
-                        },
-                        {
-                            id: messageId++,
-                            sender: 0,
-                            content: "Hello?"
-                        },
-                        {
-                            id: messageId++,
-                            sender: 1,
-                            content: "What's up?"
-                        },
-                        {
-                            id: messageId++,
-                            sender: 0,
-                            content: "Just a test!", 
-                        },
-                        {
-                            id: messageId++,
-                            sender: 0,
-                            content: "Hello?"
-                        },
-                        {
-                            id: messageId++,
-                            sender: 1,
-                            content: "What's up?"
-                        },
-                        {
-                            id: messageId++,
-                            sender: 0,
-                            content: "Just a test!", 
-                        },
-                        {
-                            id: messageId++,
-                            sender: 0,
-                            content: "Hello?"
-                        },
-                        {
-                            id: messageId++,
-                            sender: 1,
-                            content: "What's up?"
-                        },
-                        {
-                            id: messageId++,
-                            sender: 0,
-                            content: "Just a test!", 
-                        },
-                        {
-                            id: messageId++,
-                            sender: 0,
-                            content: "Hello?"
-                        },
-                        {
-                            id: messageId++,
-                            sender: 1,
-                            content: "What's up?"
-                        },
-                        {
-                            id: messageId++,
-                            sender: 0,
-                            content: "Just a test!", 
-                        },
-                        {
-                            id: messageId++,
-                            sender: 0,
-                            content: "Hello?"
-                        },
-                        {
-                            id: messageId++,
-                            sender: 1,
-                            content: "What's up?"
-                        },
-                        {
-                            id: messageId++,
-                            sender: 0,
-                            content: "Just a test!", 
-                        },
-                        {
-                            id: messageId++,
-                            sender: 0,
-                            content: "Hello?"
-                        },
-                        {
-                            id: messageId++,
-                            sender: 1,
-                            content: "What's up?"
-                        }
-                    ]
-                },
-                {
-                    id: friendId++,
-                    nickName: "Bill Gates",
-                    avater: require("./imgs/avater2.jpg"),
-                    messageHistory: [
-                        {
-                            id: messageId++,
-                            sender: 1,
-                            content: "Hey friend."
-                        },
-                        {
-                            id: messageId++,
-                            sender: 0,
-                            content:  "Advanced Network."
-                        }
-                    ]
-                }
-            ]*/
+            self: {},
+            displayFriendIndex: -1,
+            onlineUsers: [],
+            messages: []
         }
     }
 }
