@@ -29,22 +29,39 @@ export default {
             let res = await axios.get(requireBaseURL + '/api/user/' + selfId);
             this.self = res.data.result;
             if(this.self == null) return 1;
-            this.displayFriendIndex = this.onlineUsers.push(this.self) - 1;
-            // Session 记录登录状态和个人信息
-            sessionStorage.setItem('_id', this.self._id);
-            sessionStorage.setItem('isLogin', true);
+            // vuex 记录登录状态和个人信息
+            this.$store.state.loginUserInfo = this.self;
+            this.$store.state.isLogin = true;
+            this.saveStore();
             // 左下角那个随机加人的按钮改成退出功能
             return 0;
+        },
+        saveStore: function () {
+            sessionStorage.setItem('store', JSON.stringify(this.$store.state));
         }
     },
     async beforeCreate() {
+        window.addEventListener("beforeunload", () => {
+            this.saveStore();
+        })
+
+        // Read store from sessionStorage
+        if(sessionStorage.getItem('store')) {
+            console.log(sessionStorage.getItem('store'));
+            this.$store.replaceState(Object.assign({}, this.$store.state, JSON.parse(sessionStorage.getItem('store'))));
+        }
         console.log("$store.state.isLogin: " + this.$store.state.isLogin);
     },
 
     async created() {
         // Login with selfId
-        let loginSuccess = await this.login();
-        while(loginSuccess != 0) loginSuccess = await this.login('Id not found. Please enter a valid id:');
+        if(this.$store.state.isLogin == false) {
+            let loginSuccess = await this.login();
+            while(loginSuccess != 0) loginSuccess = await this.login('Id not found. Please enter a valid id:');
+        } else {
+            this.self = this.$store.state.loginUserInfo;
+        }
+        this.displayFriendIndex = this.onlineUsers.push(this.self) - 1;
         // Pull message history
         let messageResult = await axios.get(requireBaseURL + '/api/chatroomMessages');
         this.messages = messageResult.data.result;
