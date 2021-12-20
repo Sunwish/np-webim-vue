@@ -4,7 +4,7 @@
             <OnlineList :users="onlineUsers" :displayFriendIndex="displayFriendIndex" @clickFriendItem="clickFriendItem"/>
         </div>
         <div class="MessageDiv">
-            <Message :messages="messages" :self="self"/>
+            <Message :messages="messages" :self="self" :socket="socket"/>
         </div>
     </div>
 </template>
@@ -13,7 +13,12 @@
 import axios from 'axios';
 import OnlineList from "./components/OnlineList.vue"
 import Message from "./components/Message.vue"
+const { io } = require('socket.io-client');
+
 const requireBaseURL = "http://localhost:80";
+
+// Connect socket.io
+var socket = io(requireBaseURL);
 
 export default {
     components: {
@@ -51,6 +56,7 @@ export default {
             this.$store.replaceState(Object.assign({}, this.$store.state, JSON.parse(sessionStorage.getItem('store'))));
         }
         console.log("$store.state.isLogin: " + this.$store.state.isLogin);
+
     },
 
     async created() {
@@ -72,7 +78,8 @@ export default {
             self: {},
             displayFriendIndex: -1,
             onlineUsers: [],
-            messages: []
+            messages: [],
+            socket: socket
         }
     }
 }

@@ -24,6 +24,14 @@
     </div>
 </template>
 <script>
+/**
+ * Author: Sunwish
+ * 消息收发逻辑：
+ * 1. 发送消息使用 axio 请求服务端的插入消息 api 进行发送
+ * 2. 接收消息通过 socket.io-client 接收来自服务器的广播推送接收
+ * 3. 自己发送的消息也视为别人的消息通过 socket.io 推送接收并添加到聊天框
+ *    而无视 axios 返回的发送成功的回调消息对象
+ */
 import axios from 'axios';
 const requireBaseURL = "http://localhost:80";
 let scrollContainer = document.getElementById('message-history-viewer');
@@ -37,12 +45,27 @@ export default {
         self: {
             type: Object,
             required: true
+        },
+        socket: {
+            type: Object,
+            required: true
         }
     },
     data () {
         return {
             sendboxContent: "",
         }
+    },
+    created () {
+        this.socket.on('chat_message', (message) => {
+            let msgInserted = JSON.parse(message);
+            // update front-end
+            this.messages.push(msgInserted);
+            this.sendboxContent = "";
+            setTimeout(()=>{
+                scrollContainer.scrollTop = scrollContainer.scrollHeight;
+            })
+        })
     },
     mounted () {
         scrollContainer = document.getElementById('message-history-viewer');
@@ -64,6 +87,8 @@ export default {
                 content: this.sendboxContent,
                 time: Date.now()
             });
+            
+            /* 自己发送的消息通过 socket.io-client 接收服务器推送得到，不处理 axios 的响应了
             if(res.data.errMessage == null) {
                 let msgInserted = res.data.result;
                 // update front-end
@@ -72,11 +97,15 @@ export default {
                 setTimeout(()=>{
                     scrollContainer.scrollTop = scrollContainer.scrollHeight;
                 })
-            } else {
+            }
+            */
+
+            // 错误还是要处理的
+            if(res.data.errMessage != null) {
                 alert("消息发送失败！错误信息见控制台。");
                 console.error("发送消息失败：", res.data.errMessage);
             }
-
+            
         },
         handleKeyDown () {
             this.clickSend();
