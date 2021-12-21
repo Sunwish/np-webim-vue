@@ -92,8 +92,13 @@ export default {
         } else {
             this.self = this.$store.state.loginUserInfo;
         }
+        // Pull online users maintain on server-end
+        let res = await axios.get(this.requireBaseURL + '/api/onlineUsers');
+        this.onlineUsers.push.apply(this.onlineUsers, res.data.result);
+        // console.log('onlineUsers get from server: ', res.data.result);
+
         // Broadcast self online event to update all online users' online list
-        axios.post(this.requireBaseURL + '/api/onlineBroadcast', {
+        axios.post(this.requireBaseURL + '/api/onlineUser', {
             user: this.self,
             connId: this.socket.id
         })
