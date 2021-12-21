@@ -48,7 +48,7 @@ export default {
         this.socket.on('user_connect', (user) => {
             let userObject = JSON.parse(user);
             this.onlineUsers.push(userObject);
-            console.log('user_connect: ', userObject.connId);
+            // console.log('user_connect: ', userObject.connId, 'onlineList now: ', this.onlineUsers);
         })
         this.socket.on('user_disconnect', (disconnectId) => {
             const i = this.onlineUsers.findIndex(user => user.connId == disconnectId);

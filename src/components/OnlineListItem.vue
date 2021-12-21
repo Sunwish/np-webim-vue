@@ -37,6 +37,11 @@ export default {
         return {
             avater: 'http://localhost/api/avater/' + this.user.avater
         }
+    },
+    updated () {
+        // 用户退出然后新用户加入时，user 会被更新，但头像在 data() 中于
+        // 初始化后就返回不变了，因此需要在更新时手动更新一下 data() 中返回的头像信息
+        this.avater = 'http://localhost/api/avater/' + this.user.avater
     }
 }
 </script>

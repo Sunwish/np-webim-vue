@@ -69,14 +69,14 @@ export default {
     },
     mounted () {
         scrollContainer = document.getElementById('message-history-viewer');
-        console.log("mounted");
+        // console.log("mounted");
         if(justCreated == 1){
             scrollContainer.scrollTop = scrollContainer.scrollHeight;
             justCreated = 1;
         }
     },
     updated () {
-        console.log("Message.vue updated");
+        // console.log("Message.vue updated");
         scrollContainer = document.getElementById('message-history-viewer');
     },
     methods: {
