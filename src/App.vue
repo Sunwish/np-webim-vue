@@ -92,6 +92,11 @@ export default {
         } else {
             this.self = this.$store.state.loginUserInfo;
         }
+        // Broadcast self online event to update all online users' online list
+        axios.post(this.requireBaseURL + '/api/onlineBroadcast', {
+            user: this.self,
+            connId: this.socket.id
+        })
         this.displayFriendIndex = 0;
         // Pull message history
         let messageResult = await axios.get(this.requireBaseURL + '/api/chatroomMessages');
