@@ -1,7 +1,7 @@
 <template>
     <div class="app">
         <div class="FriendListDiv">
-            <OnlineList :users="onlineUsers" :displayFriendIndex="displayFriendIndex" @clickFriendItem="clickFriendItem"/>
+            <OnlineList :onlineUsers="onlineUsers" :displayFriendIndex="displayFriendIndex" @clickFriendItem="clickFriendItem" :socket="socket"/>
         </div>
         <div class="MessageDiv">
             <Message :messages="messages" :self="self" :socket="socket"/>
@@ -26,17 +26,28 @@
 import axios from 'axios';
 import OnlineList from "./components/OnlineList.vue"
 import Message from "./components/Message.vue"
-const { io } = require('socket.io-client');
 
-const requireBaseURL = "http://localhost:80";
 
 // Connect socket.io
-var socket = io(requireBaseURL);
+//var socket = io(requireBaseURL);
+//socket.on('connect', () => {
+//    console.log('connect id: ', socket.id);
+//});
 
 export default {
     components: {
         OnlineList, 
         Message
+    },
+    props: {
+        requireBaseURL: {
+            type: String,
+            required: true
+        },
+        socket: {
+            type: Object,
+            required: true
+        }
     },
     methods: {
         clickFriendItem: function () {
@@ -44,8 +55,9 @@ export default {
         },
         login: async function (promptMsg = "What's your username?") {
             let username = prompt(promptMsg);
-            let res = await axios.post(requireBaseURL + '/api/login', {
-                username: username
+            let res = await axios.post(this.requireBaseURL + '/api/login', {
+                username: username,
+                connId: this.socket.id
             });
             this.self = res.data.result;
             if(this.self == null) return 1;
@@ -67,11 +79,9 @@ export default {
 
         // Read store from sessionStorage
         if(sessionStorage.getItem('store')) {
-            console.log(sessionStorage.getItem('store'));
+            // console.log(sessionStorage.getItem('store'));
             this.$store.replaceState(Object.assign({}, this.$store.state, JSON.parse(sessionStorage.getItem('store'))));
         }
-        console.log("$store.state.isLogin: " + this.$store.state.isLogin);
-
     },
 
     async created() {
@@ -82,9 +92,9 @@ export default {
         } else {
             this.self = this.$store.state.loginUserInfo;
         }
-        this.displayFriendIndex = this.onlineUsers.push(this.self) - 1;
+        this.displayFriendIndex = 0;
         // Pull message history
-        let messageResult = await axios.get(requireBaseURL + '/api/chatroomMessages');
+        let messageResult = await axios.get(this.requireBaseURL + '/api/chatroomMessages');
         this.messages = messageResult.data.result;
     },
 
@@ -94,7 +104,6 @@ export default {
             displayFriendIndex: -1,
             onlineUsers: [],
             messages: [],
-            socket: socket
         }
     }
 }
