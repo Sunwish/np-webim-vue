@@ -22,6 +22,9 @@
  * 用户退出时的列表更新。因为这也是为什么登录时要将自己的 socket id 给服务器广播给其它用户。
  */
 import OnlineListItem from "./OnlineListItem.vue"
+import axios from 'axios';
+axios.defaults.withCredentials = true;
+
 let randomId = 1;
 export default {
     components: {
@@ -38,6 +41,10 @@ export default {
         },
         socket: {
             type: Object,
+            required: true
+        },
+        requireBaseURL: {
+            type: String,
             required: true
         }
     },
@@ -61,9 +68,12 @@ export default {
             sessionStorage.setItem('store', JSON.stringify(state));
         },
         logOut () {
+            /*
             this.$store.state.isLogin = false;
             this.$store.state.loginUserInfo = {};
             this.saveStore();
+            */
+            axios.post(this.requireBaseURL + '/api/logout');
             location.reload();
             /*
             this.users.push({

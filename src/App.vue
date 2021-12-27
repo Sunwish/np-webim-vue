@@ -1,7 +1,7 @@
 <template>
     <div class="app">
         <div class="FriendListDiv">
-            <OnlineList :onlineUsers="onlineUsers" :displayFriendIndex="displayFriendIndex" @clickFriendItem="clickFriendItem" :socket="socket"/>
+            <OnlineList :onlineUsers="onlineUsers" :displayFriendIndex="displayFriendIndex" @clickFriendItem="clickFriendItem" :socket="socket" :requireBaseURL="requireBaseURL"/>
         </div>
         <div class="MessageDiv">
             <Message :messages="messages" :self="self" :socket="socket"/>
@@ -26,7 +26,7 @@
 import axios from 'axios';
 import OnlineList from "./components/OnlineList.vue"
 import Message from "./components/Message.vue"
-
+axios.defaults.withCredentials = true;
 
 // Connect socket.io
 //var socket = io(requireBaseURL);
@@ -62,35 +62,42 @@ export default {
             this.self = res.data.result;
             if(this.self == null) return 1;
             // vuex 记录登录状态和个人信息
+            /*
             this.$store.state.loginUserInfo = this.self;
             this.$store.state.isLogin = true;
             this.saveStore();
+            */
             return 0;
         },
+        /*
         saveStore: function () {
             sessionStorage.setItem('store', JSON.stringify(this.$store.state));
         }
+        */
     },
 
     beforeCreate() {
         window.addEventListener("beforeunload", () => {
             this.saveStore();
         })
-
+        /*
         // Read store from sessionStorage
         if(sessionStorage.getItem('store')) {
             // console.log(sessionStorage.getItem('store'));
             this.$store.replaceState(Object.assign({}, this.$store.state, JSON.parse(sessionStorage.getItem('store'))));
         }
+        */
     },
 
     async created() {
         // Login with selfId
-        if(this.$store.state.isLogin == false) {
+        this.self = (await axios.post(this.requireBaseURL + '/api/whoami')).data.result;
+        console.log('this.self: ', this.self);
+        if(this.self == null /*this.$store.state.isLogin == false*/) {
             let loginSuccess = await this.login();
             while(loginSuccess != 0) loginSuccess = await this.login('Id not found. Please enter a valid id:');
         } else {
-            this.self = this.$store.state.loginUserInfo;
+            // this.self = this.$store.state.loginUserInfo;
         }
         // Pull online users maintain on server-end
         let res = await axios.get(this.requireBaseURL + '/api/onlineUsers');
