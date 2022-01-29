@@ -1,6 +1,15 @@
 # vue-webim
 
+## Display
+
+![image-20220129141340837](README/image-20220129141340837.png)
+
+## Module division & UI prototype
+
+![](README/6a9b6d2328e6498aaaade44dcf75e779.png)
+
 ## Project setup
+
 ```
 npm install
 ```

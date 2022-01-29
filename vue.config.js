@@ -1,4 +1,5 @@
 module.exports = {
+    transpileDependencies: ['vuex-persist'],
     chainWebpack: config => {
       const imagesRule = config.module.rule('images')
       imagesRule.uses.clear();
